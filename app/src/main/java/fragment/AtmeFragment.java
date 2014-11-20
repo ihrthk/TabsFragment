@@ -1,4 +1,4 @@
-package com.zhangls.tabsfragment;
+package fragment;
 
 /**
  * Created by admin on 13-11-23.
@@ -6,7 +6,7 @@ package com.zhangls.tabsfragment;
 public class AtmeFragment extends BaseFragment {
 
     @Override
-    public String initContent() {
+    public String getContent() {
         return "这是@我界面";
     }
 }

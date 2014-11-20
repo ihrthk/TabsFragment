@@ -1,6 +1,8 @@
-package com.zhangls.tabsfragment;
+package fragment;
 
 import android.app.Fragment;
+
+import com.zhangls.tabsfragment.R;
 
 /**
  * Created by admin on 13-11-23.
