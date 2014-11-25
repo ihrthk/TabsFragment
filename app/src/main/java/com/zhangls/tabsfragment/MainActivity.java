@@ -70,4 +70,26 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
 		}
 		return null;
 	}
+	public static String MACBytes2String(byte[] source) {
+		String result="";
+		if(source.length == 6) {
+			int num = 0;
+			num = 0x000000FF & source[0];
+			if(num > 15) {
+			    result = Integer.toHexString(num);
+			} else {
+				result = "0" + Integer.toHexString(num);
+			}
+			for(int i = 1 ; i < source.length ; i++) {
+				num = 0x00000FF & (int)source[i];
+				if(num > 15) {
+				    result = result + ":" + Integer.toHexString(num);
+				} else {
+				    result = result + ":0" + Integer.toHexString(num);
+				}
+			}
+			return result.toLowerCase();
+		}
+		return null;
+	}
 }
