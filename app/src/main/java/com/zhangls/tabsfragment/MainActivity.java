@@ -34,4 +34,26 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
         transaction.replace(R.id.content, fragment);
         transaction.commit();
     }
+    //get local ip 需要网络权限
+    //172.18.195.33
+	public void scanNetworkInterface() {
+		try {
+			netinterface.clear();
+			Enumeration<NetworkInterface> nets = NetworkInterface.getNetworkInterfaces();
+			for(NetworkInterface netint : Collections.list(nets))
+			{
+				Enumeration<InetAddress> inetAddresses = netint.getInetAddresses();
+				for (InetAddress inetAddress : Collections.list(inetAddresses)){
+					StringTokenizer st = new StringTokenizer(inetAddress.getHostAddress(),".");
+					if(st.countTokens() == 4) {
+						if(!inetAddress.getHostAddress().equals("127.0.0.1")) {
+					        netinterface.add(inetAddress);
+						}
+					}
+				}
+			}
+		} catch (SocketException e) {
+			e.printStackTrace();
+		}
+	}
 }
