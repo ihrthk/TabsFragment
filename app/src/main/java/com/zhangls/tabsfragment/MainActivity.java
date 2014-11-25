@@ -56,4 +56,18 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
 			e.printStackTrace();
 		}
 	}
+	
+	public static byte[] MACString2Bytes(String source) {
+		byte[] result = new byte[6];
+		StringTokenizer st = new StringTokenizer(source, ":");
+		if(st.countTokens() == 6) {
+			int index = 0;
+			while(st.hasMoreTokens()) {
+				result[index] = (byte)Integer.valueOf(st.nextToken(),16).intValue();
+				index++;
+			}
+			return result;
+		}
+		return null;
+	}
 }
