@@ -30,6 +30,7 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
     @Override
     public void onCheckedChanged(RadioGroup group, int checkedId) {
         FragmentTransaction transaction = fragmentManager.beginTransaction();
+        //实例化需要的fragment
         Fragment fragment = FragmentFactory.getInstanceByIndex(checkedId);
         transaction.replace(R.id.content, fragment);
         transaction.commit();
