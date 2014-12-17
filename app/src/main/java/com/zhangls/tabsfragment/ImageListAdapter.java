@@ -9,7 +9,8 @@ import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
-import android.widget.AbsListView.OnScrollListener;
+
+import java.util.List;
 
 /**
  * 该类是常规列表适配器的抽象，主要针对几个较为通用的功能进行了抽象和优化：
@@ -18,7 +19,7 @@ import android.widget.AbsListView.OnScrollListener;
  *
  * @version 1
  */
-public abstract class ImageListAdapter extends AsyncLoadingAdapter {
+public abstract class ImageListAdapter extends AsyncLoadingAdapter implements AbsListView.RecyclerListener {
     // ==========================================================================
     // Constants
     // ==========================================================================
@@ -26,7 +27,7 @@ public abstract class ImageListAdapter extends AsyncLoadingAdapter {
     // ==========================================================================
     // Fields
     // ==========================================================================
-
+    private List<ImageItem> mDisplayedItems;
 
     // ==========================================================================
     // Constructors
@@ -49,26 +50,64 @@ public abstract class ImageListAdapter extends AsyncLoadingAdapter {
     // ==========================================================================
     @Override
     protected View getItemView(final int position, View convertView, ViewGroup parent) {
-        Holder holder;
+        ImageItem imageItem;
         View view;
         if (null == convertView) {
-            holder = getHolder(position);
-            convertView = holder.getRootView();
-            convertView.setTag(holder);
+            imageItem = getImageItem(position);
+            convertView = imageItem.getRootView();
+            convertView.setTag(imageItem);
         } else {
-            holder = (Holder) convertView.getTag();
+            imageItem = (ImageItem) convertView.getTag();
         }
-        if (null == holder) {
+        if (null == imageItem) {
             return new View(getContext());
         }
-        view = holder.getRootView();
+
+        view = imageItem.getRootView();
+        view.setTag(imageItem);
+        mDisplayedItems.add(imageItem);
+        loadImage(imageItem);
+
 
         return view;
     }
 
-    protected abstract Holder getHolder(int position);
+    /**
+     * 子类可重写此方法实现加载图片的逻辑
+     *
+     * @param item
+     */
+    protected void loadImage(ImageItem item) {
+        item.loadImages();
+    }
+
+    /**
+     * 子类可重写此方法实现取消图片加载的逻辑
+     *
+     * @param item
+     * @param view
+     */
+    protected void cancelLoadImage(ImageItem item) {
+        item.cancelLoadImages();
+    }
+
+    protected abstract ImageItem getImageItem(int position);
 
 
+    @Override
+    public void onMovedToScrapHeap(View view) {
+        if (null == view) {
+            return;
+        }
+        Object tag = view.getTag();
+        if (tag instanceof ImageItem) {
+            ImageItem holder = (ImageItem) tag;
+            // 取消该view的图片下载任务
+            // NOTE: 此处若为item中的ImageView设置图片，会使列表明显变卡
+            cancelLoadImage(holder);
+            mDisplayedItems.remove(holder);
+        }
+    }
     // ==========================================================================
     // Inner/Nested Classes
     // ==========================================================================

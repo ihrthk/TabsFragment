@@ -229,8 +229,9 @@ public abstract class AsyncLoadingAdapter extends BaseAdapter {
 
         final int itemCount = getItemCount();
         if ((position >= itemCount - 1 - getPreloadCount()) &&
-                (itemCount < getItemLimit()) && hasMore() && mMoreEnabled) {
+                itemCount < getItemLimit() && hasMore() && mMoreEnabled && !mLoading) {
             // load more items
+            mLoading = true;
             loadMore();
         }
         if (view == null) {
@@ -266,13 +267,6 @@ public abstract class AsyncLoadingAdapter extends BaseAdapter {
      * 加载更多
      */
     private synchronized void loadMore() {
-        if (!mLoading) {
-            mLoading = true;
-        } else {
-            // Already loading
-            return;
-        }
-        //TODO zls:asynctask exception?
         new AsyncTask<Integer, Void, Exception>() {
             @Override
             protected Exception doInBackground(Integer... params) {

@@ -220,7 +220,7 @@ public abstract class BaseListAdapter<Data> extends ImageListAdapter implements 
     }
 
     @Override
-    protected View getItemView(final int position, View convertView, ViewGroup parent) {
+    protected View getItemView(int position, View convertView, ViewGroup parent) {
         final Object item = getItem(position);
         if (null == item) {
             return new View(mContext);
@@ -247,7 +247,7 @@ public abstract class BaseListAdapter<Data> extends ImageListAdapter implements 
     }
 
     @Override
-    protected void loadFailed() {
+    protected void loadFailed(Exception result) {
         blockLoadMore();
         mHasMore = true;
 
@@ -343,7 +343,7 @@ public abstract class BaseListAdapter<Data> extends ImageListAdapter implements 
     }
 
     @Override
-    protected Holder getHolder(int position) {
+    protected Holder getImageItem(int position) {
         // TODO Auto-generated method stub
         return null;
     }
