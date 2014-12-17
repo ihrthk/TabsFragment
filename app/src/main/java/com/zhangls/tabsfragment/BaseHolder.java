@@ -1,8 +1,6 @@
 package com.zhangls.tabsfragment;
 
-import android.app.Activity;
 import android.content.Context;
-import android.content.res.Resources;
 import android.view.LayoutInflater;
 import android.view.View;
 
@@ -14,7 +12,7 @@ public abstract class BaseHolder<Data> {
     // ==========================================================================
     // Fields
     // ==========================================================================
-    private Activity mActivity;
+    private Context mContext;
 
     private int mPosition;
 
@@ -23,16 +21,16 @@ public abstract class BaseHolder<Data> {
     // ==========================================================================
     // Constructors
     // ==========================================================================
-    public BaseHolder(Activity activity, Data data) {
-        mActivity = activity;
+    public BaseHolder(Context context, Data data) {
+        mContext = context;
         mData = data;
     }
 
     // ==========================================================================
     // Getters
     // ==========================================================================
-    public Activity getActivity() {
-        return mActivity;
+    public Context getContext() {
+        return mContext;
     }
 
     // ==========================================================================
@@ -58,16 +56,8 @@ public abstract class BaseHolder<Data> {
         mData = data;
     }
 
-    public Context getThemeContext() {
-        return mActivity;
-    }
-
-    public Resources getThemeResources() {
-        return mActivity.getResources();
-    }
-
     public View inflate(int resId) {
-        return LayoutInflater.from(mActivity).inflate(resId, null);
+        return LayoutInflater.from(mContext).inflate(resId, null);
     }
 
 

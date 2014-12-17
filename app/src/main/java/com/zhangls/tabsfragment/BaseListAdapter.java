@@ -10,6 +10,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.RelativeLayout.LayoutParams;
@@ -340,12 +341,6 @@ public abstract class BaseListAdapter<Data> extends ImageListAdapter implements 
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         // TODO Auto-generated method stub
 
-    }
-
-    @Override
-    protected Holder getImageItem(int position) {
-        // TODO Auto-generated method stub
-        return null;
     }
 
     @Override

@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -19,21 +20,25 @@ import java.util.List;
  *
  * @version 1
  */
-public abstract class ImageListAdapter extends AsyncLoadingAdapter implements AbsListView.RecyclerListener {
+public abstract class ImageListAdapter extends AsyncLoadingAdapter implements
+        AbsListView.RecyclerListener, AbsListView.OnScrollListener {
     // ==========================================================================
     // Constants
     // ==========================================================================
-
+    private static final int DEFAULT_DISPLAYED_ITEMS_COUNT = 8;
     // ==========================================================================
     // Fields
     // ==========================================================================
     private List<ImageItem> mDisplayedItems;
+    private boolean mRefreshImageOnFling = false;
+    private int mScrollState = AbsListView.OnScrollListener.SCROLL_STATE_IDLE;
 
     // ==========================================================================
     // Constructors
     // ==========================================================================
     public ImageListAdapter(Context context) {
         super(context);
+        mDisplayedItems = new ArrayList<ImageItem>(DEFAULT_DISPLAYED_ITEMS_COUNT);
     }
 
     // ==========================================================================
@@ -42,6 +47,14 @@ public abstract class ImageListAdapter extends AsyncLoadingAdapter implements Ab
     @Override
     public void setListView(AbsListView listView) {
         super.setListView(listView);
+        if (null != mAbsListView) {
+            mAbsListView.setRecyclerListener(this);
+            mAbsListView.setOnScrollListener(this);
+        }
+    }
+
+    public void setRefreshImageOnFling(boolean refresh) {
+        mRefreshImageOnFling = refresh;
     }
 
 
@@ -64,12 +77,34 @@ public abstract class ImageListAdapter extends AsyncLoadingAdapter implements Ab
         }
 
         view = imageItem.getRootView();
-        view.setTag(imageItem);
         mDisplayedItems.add(imageItem);
         loadImage(imageItem);
 
-
         return view;
+    }
+
+    /**
+     * 规定是否显示图标。子类可重写用于控制图标的显示与加载。当返回false时，图标不会显示，也不会加载。
+     *
+     * @return true代表图标需要加载/显示，false代表图标不需要加载/显示。
+     */
+    protected boolean shouldDisplayImage() {
+        return true;
+    }
+
+    public boolean shouldRefreshImage() {
+        return AbsListView.OnScrollListener.SCROLL_STATE_FLING != mScrollState || mRefreshImageOnFling;
+    }
+
+    private void refreshAllImage() {
+        if (shouldDisplayImage()/* && shouldRefreshImage() */) {
+            // notifyDataSetChanged();
+            List<ImageItem> displayedItems = new ArrayList<ImageItem>(mDisplayedItems);
+            for (int i = 0; i < displayedItems.size(); i++) {
+                ImageItem holder = displayedItems.get(i);
+                loadImage(holder);
+            }
+        }
     }
 
     /**
@@ -85,7 +120,6 @@ public abstract class ImageListAdapter extends AsyncLoadingAdapter implements Ab
      * 子类可重写此方法实现取消图片加载的逻辑
      *
      * @param item
-     * @param view
      */
     protected void cancelLoadImage(ImageItem item) {
         item.cancelLoadImages();
@@ -108,6 +142,30 @@ public abstract class ImageListAdapter extends AsyncLoadingAdapter implements Ab
             mDisplayedItems.remove(holder);
         }
     }
+
+    @Override
+    public void onScrollStateChanged(AbsListView view, int scrollState) {
+        int oldScrollState = mScrollState;
+        mScrollState = scrollState;
+        // if (Build.VERSION.SDK_INT == Build.VERSION_CODES.ECLAIR_MR1) {
+        // if (OnScrollListener.SCROLL_STATE_FLING == oldScrollState &&
+        // (OnScrollListener.SCROLL_STATE_IDLE == scrollState
+        // || OnScrollListener.SCROLL_STATE_TOUCH_SCROLL == scrollState)) {
+        // notifyDataSetChanged();
+        // }
+        // } else {
+        // if (OnScrollListener.SCROLL_STATE_FLING == oldScrollState && OnScrollListener.SCROLL_STATE_IDLE ==
+        // scrollState) {
+        // notifyDataSetChanged();
+        // }
+        // }
+        if (AbsListView.OnScrollListener.SCROLL_STATE_FLING == oldScrollState
+                && (AbsListView.OnScrollListener.SCROLL_STATE_IDLE == scrollState
+                || AbsListView.OnScrollListener.SCROLL_STATE_TOUCH_SCROLL == scrollState)) {
+            refreshAllImage();
+        }
+    }
+
     // ==========================================================================
     // Inner/Nested Classes
     // ==========================================================================
