@@ -32,6 +32,7 @@ public abstract class AsyncLoadingAdapter extends BaseAdapter {
      */
     public static final int ITEM_COUNT_LIMIT = Integer.MAX_VALUE - 1;
 
+    protected static final int VIEW_TYPE_BOTTOM_OVERLAY = 0;
     protected static final int VIEW_TYPE_MORE = 1;
     protected static final int VIEW_TYPE_ITEM = 2;
 
@@ -47,6 +48,8 @@ public abstract class AsyncLoadingAdapter extends BaseAdapter {
     private int mItemLimit;
 
     protected AbsListView mAbsListView;
+
+    private int mBottomOverlayHeight = -1;
 
     // ==========================================================================
     // Constructors
@@ -66,29 +69,9 @@ public abstract class AsyncLoadingAdapter extends BaseAdapter {
         return mContext;
     }
 
-    // ==========================================================================
-    // Setters
-    // ==========================================================================
-    public void setMoreEnabled(boolean enabled) {
-        mMoreEnabled = enabled;
+    protected int getItemLimit() {
+        return mItemLimit;
     }
-
-    public boolean setItemLimit(int limit) {
-        if (limit == Integer.MAX_VALUE) {
-            Log.e(TAG, "Item limit should be less than Integer.MAX_VALUE " + Integer.MAX_VALUE);
-            return false;
-        }
-        mItemLimit = limit;
-        return true;
-    }
-
-    public void setListView(AbsListView listView) {
-        mAbsListView = listView;
-    }
-
-    // ==========================================================================
-    // Methods
-    // ==========================================================================
 
     /**
      * 获取列表当前实际项数
@@ -115,23 +98,14 @@ public abstract class AsyncLoadingAdapter extends BaseAdapter {
         return DEFAULT_PRELOAD_COUNT;
     }
 
-    ;
-
     /**
-     * 是否还有更多项
+     * 如果需要底部填充，子类需要重写
      *
-     * @return true表示还可以继续加载，false表示全部项已经加载完毕。
+     * @return
      */
-    public abstract boolean hasMore();
-
-    /**
-     * 子类重写该方法实现加载更多项的逻辑。该方法会在非UI线程内异步执行。
-     *
-     * @param startPosition 加载更多的起始项位置
-     * @param requestSize   请求加载的项数
-     * @return 实际加载的项数
-     */
-    protected abstract int onLoadMore(int startPosition, int requestSize) throws Exception;
+    public int getBottomOverlay() {
+        return mBottomOverlayHeight;
+    }
 
     /**
      * 获取列表内容项类型数
@@ -153,80 +127,61 @@ public abstract class AsyncLoadingAdapter extends BaseAdapter {
     }
 
     /**
-     * 获取列表项的视图
+     * 是否还有更多项
      *
-     * @param position    在列表中的位置
-     * @param convertView 可重用视图
-     * @param parent      父视图
-     * @return 该列表项的视图
+     * @return true表示还可以继续加载，false表示全部项已经加载完毕。
      */
-    protected abstract View getItemView(int position, View convertView, ViewGroup parent);
+    public abstract boolean hasMore();
 
-    /**
-     * 获取“更多”项的视图
-     *
-     * @param position    在列表中的位置
-     * @param convertView 可重用视图
-     * @param parent      父视图
-     * @return 该列表项的视图
-     */
-    public abstract View getMoreView(int position, View convertView, ViewGroup parent);
-
-
-    protected int getItemLimit() {
-        return mItemLimit;
+    // ==========================================================================
+    // Setters
+    // ==========================================================================
+    public void setMoreEnabled(boolean enabled) {
+        mMoreEnabled = enabled;
     }
 
-    /**
-     * 加载更多
-     */
-    private synchronized void loadMore() {
-        if (!mLoading) {
-            mLoading = true;
-        } else {
-            // Already loading
-            return;
+    public boolean setItemLimit(int limit) {
+        if (limit == Integer.MAX_VALUE) {
+            Log.e(TAG, "Item limit should be less than Integer.MAX_VALUE " + Integer.MAX_VALUE);
+            return false;
         }
-
-        new AsyncTask<Integer, Void, Boolean>() {
-            @Override
-            protected Boolean doInBackground(Integer... params) {
-                android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
-                int itemCount = getItemCount();
-                int increment = Math.min(getIncrement(), getItemLimit() - getItemCount());
-                boolean result = true;
-                try {
-                    onLoadMore(itemCount, increment);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    result = false;
-                }
-                return result;
-            }
-
-            @Override
-            protected void onPostExecute(Boolean result) {
-                if (!result) {
-                    loadFailed();
-                }
-
-                notifyDataSetChanged();
-                mLoading = false;
-            }
-
-        }.execute();
-
+        mItemLimit = limit;
+        return true;
     }
 
-    protected abstract void loadFailed();
+    public void setBottomOverlay(int bottomOverlayHeight) {
+        mBottomOverlayHeight = bottomOverlayHeight;
+    }
+
+    public void setListView(AbsListView listView) {
+        mAbsListView = listView;
+    }
+
+    // ==========================================================================
+    // Methods
+    // ==========================================================================
+
+    /**
+     * 是否需要底部填充视图（通常是有PagerTabBar的页面需要显示）
+     *
+     * @return true 需要底部填充视图
+     */
+    private boolean needBottomOverlay() {
+        // 初始化
+        return getItemCount() > 0 && getBottomOverlay() > 0;
+    }
 
     @Override
     public final int getCount() {
+        int bottomOverlayPlace = 0;
+        if (needBottomOverlay()) {
+            bottomOverlayPlace = 1;
+        }
         int itemCount = getItemCount();
         if (hasMore() && (itemCount < getItemLimit()) && mMoreEnabled) {
-            return itemCount + 1;
+            return itemCount + 1 + bottomOverlayPlace;
         } else {
-            return itemCount;
+            return itemCount + bottomOverlayPlace;
         }
     }
 
@@ -238,14 +193,33 @@ public abstract class AsyncLoadingAdapter extends BaseAdapter {
 
     @Override
     public final int getItemViewType(int position) {
+        if (needBottomOverlay() && position == getCount() - 1) {
+            return VIEW_TYPE_BOTTOM_OVERLAY;
+        }
+
         if (position < getItemCount()) {
             return getContentItemViewType(position);
         }
+
+
         return VIEW_TYPE_MORE;
     }
 
+
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
+        if (getItemViewType(position) == VIEW_TYPE_BOTTOM_OVERLAY) {
+            if (convertView == null || !(convertView.getTag() instanceof Integer)) {
+                convertView = new View(getContext());
+                convertView.setLayoutParams(new AbsListView.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT, getBottomOverlay()));
+                // 此Item区域显示父视图控件背景
+                convertView.setVisibility(View.INVISIBLE);
+                convertView.setTag(Integer.MAX_VALUE);
+            }
+            return convertView;
+        }
+
         View view = null;
         if (getItemViewType(position) != VIEW_TYPE_MORE) {
             view = getItemView(position, convertView, parent);
@@ -265,6 +239,80 @@ public abstract class AsyncLoadingAdapter extends BaseAdapter {
         }
         return view;
     }
+
+    /**
+     * 获取列表项的视图
+     *
+     * @param position    在列表中的位置
+     * @param convertView 可重用视图
+     * @param parent      父视图
+     * @return 该列表项的视图
+     */
+    protected abstract View getItemView(int position, View convertView, ViewGroup parent);
+
+
+    /**
+     * 获取“更多”项的视图
+     *
+     * @param position    在列表中的位置
+     * @param convertView 可重用视图
+     * @param parent      父视图
+     * @return 该列表项的视图
+     */
+    public abstract View getMoreView(int position, View convertView, ViewGroup parent);
+
+
+    /**
+     * 加载更多
+     */
+    private synchronized void loadMore() {
+        if (!mLoading) {
+            mLoading = true;
+        } else {
+            // Already loading
+            return;
+        }
+        //TODO zls:asynctask exception?
+        new AsyncTask<Integer, Void, Exception>() {
+            @Override
+            protected Exception doInBackground(Integer... params) {
+                android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
+                int itemCount = getItemCount();
+                int increment = Math.min(getIncrement(), getItemLimit() - getItemCount());
+                Exception exception = null;
+                try {
+                    onLoadMore(itemCount, increment);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    exception = e;
+                }
+                return exception;
+            }
+
+            @Override
+            protected void onPostExecute(Exception result) {
+                if (result == null) {
+                    notifyDataSetChanged();
+                    mLoading = false;
+                } else {
+                    loadFailed(result);
+                }
+            }
+
+        }.execute();
+    }
+
+    /**
+     * 子类重写该方法实现加载更多项的逻辑。该方法会在非UI线程内异步执行。
+     *
+     * @param startPosition 加载更多的起始项位置
+     * @param requestSize   请求加载的项数
+     * @return 实际加载的项数
+     */
+    protected abstract int onLoadMore(int startPosition, int requestSize) throws Exception;
+
+
+    protected abstract void loadFailed(Exception result);
 
 
     // ==========================================================================
