@@ -1,6 +1,4 @@
-package fragment;
-
-import fragment.BaseFragment;
+package com.zhangls.tabsfragment.fragment;
 
 /**
  * Created by admin on 13-11-23.

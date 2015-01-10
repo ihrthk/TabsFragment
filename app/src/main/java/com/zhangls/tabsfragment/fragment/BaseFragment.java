@@ -1,4 +1,4 @@
-package fragment;
+package com.zhangls.tabsfragment.fragment;
 
 import android.app.Fragment;
 import android.os.Bundle;
