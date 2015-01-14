@@ -23,3 +23,41 @@ dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.android.support:appcompat-v7:21.0.0'
 }
+
+configurations {	
+    ftpAntTask	
+}	
+
+dependencies {	
+    compile project(':mydlinkbase')	
+    compile files('libs/android-support-v4.jar')	
+
+    ftpAntTask("org.apache.ant:ant-commons-net:1.9.3") {	
+        module("commons-net:commons-net:1.4.1") {	
+            dependencies "oro:oro:2.0.8:jar"	
+        }	
+    }	
+}	
+
+task ftp << {	
+    File dir=new File("../out/production/lite")	
+    String oldName="lite.apk";	
+    def date = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date())	
+    String newName="mydlinklite-debug_" + date +".apk"	
+
+    File oldFile=new File(dir,oldName);	
+    def newFile = new File(dir, newName)	
+    oldFile.renameTo(newFile.getAbsolutePath())	
+
+    ant {	
+        taskdef(name: 'ftp',	
+                classname: 'org.apache.tools.ant.taskdefs.optional.net.FTP',	
+                classpath: configurations.ftpAntTask.asPath)	
+        ftp(server: "172.18.195.10",port:"21",	
+                userid: "mydlink", password: "bsdc707",remotedir:"/Zhimin") {	
+            fileset(file: newFile.getAbsolutePath())	
+        }	
+    }	
+
+    newFile.renameTo(oldFile.getAbsolutePath())	
+}
