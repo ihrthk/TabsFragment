@@ -8,7 +8,7 @@ import android.os.Bundle;
 import android.view.Window;
 import android.widget.RadioGroup;
 
-import fragment.FragmentFactory;
+import com.zhangls.tabsfragment.fragment.FragmentFactory;
 
 /**
  * 主界面

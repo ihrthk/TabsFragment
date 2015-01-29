@@ -1,4 +1,4 @@
-package fragment;
+package com.zhangls.tabsfragment.fragment;
 
 /**
  * Created by admin on 13-11-23.
