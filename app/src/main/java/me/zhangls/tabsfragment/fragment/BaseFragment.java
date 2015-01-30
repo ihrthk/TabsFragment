@@ -1,4 +1,4 @@
-package com.zhangls.tabsfragment.fragment;
+package me.zhangls.tabsfragment.fragment;
 
 import android.app.Fragment;
 import android.os.Bundle;
@@ -7,7 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.zhangls.tabsfragment.R;
+import me.zhangls.tabsfragment.R;
 
 /**
  * Created by admin on 13-11-23.

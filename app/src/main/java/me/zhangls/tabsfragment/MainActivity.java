@@ -1,4 +1,4 @@
-package com.zhangls.tabsfragment;
+package me.zhangls.tabsfragment;
 
 import android.app.Activity;
 import android.app.Fragment;
@@ -8,7 +8,7 @@ import android.os.Bundle;
 import android.view.Window;
 import android.widget.RadioGroup;
 
-import com.zhangls.tabsfragment.fragment.FragmentFactory;
+import me.zhangls.tabsfragment.fragment.FragmentFactory;
 
 /**
  * 主界面
