@@ -25,6 +25,9 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
         fragmentManager = getFragmentManager();
         RadioGroup radioGroup = (RadioGroup) findViewById(R.id.rg_tab);
         radioGroup.setOnCheckedChangeListener(this);
+
+        //default
+        findViewById(R.id.rb_attention).performClick();
     }
 
     @Override

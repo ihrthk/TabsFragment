@@ -25,7 +25,6 @@
             android:id="@+id/rb_attention"
             style="@style/weibo_tab"
             android:drawableTop="@drawable/weibolist_attention_selector"
-            android:checked="true"
             android:text="微博" />
 
         <RadioButton
