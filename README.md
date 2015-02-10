@@ -1,5 +1,5 @@
 TabsFragment
 ============
 
-使用Fragment完成Tab选项卡<br>
+Use the fragment implement bottom tab<br>
 ![demo](art/demo.png "dd")
